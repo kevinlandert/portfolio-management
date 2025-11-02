@@ -29,19 +29,19 @@ services:
   #     - portfolio-network
 
   # Backend
-  # backend:
-  #   build:
-  #     context: ./backend
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8000:8000"
-  #   volumes:
-  #     - ./backend:/app
-  #     - ./backend/database/data:/app/database/data
-  #   environment:
-  #     - PYTHONUNBUFFERED=1
-  #   networks:
-  #     - portfolio-network
+  backend-dev:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./backend/database/data:/app/database/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - portfolio-network
 
 networks:
   portfolio-network:

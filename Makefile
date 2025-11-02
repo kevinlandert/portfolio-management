@@ -27,8 +27,11 @@ backend-logs:   ## Show only backend logs (when enabled)
 frontend-shell: ## Open shell in frontend container
 	docker compose exec frontend-dev sh
 
-backend-shell:  ## Open shell in backend container (when enabled)
-	docker compose exec backend bash
+init-db:   ## Initialize database
+	docker compose exec backend-dev python database/scripts/init_db.py
+
+backend-shell:  ## Open shell in backend container
+	docker compose exec backend-dev bash
 
 restart:    ## Restart all services
 	docker compose restart
@@ -41,11 +44,9 @@ clean:      ## Stop containers and remove volumes
 	docker compose down -v
 	docker system prune -f
 
-test:       ## Run tests (update based on your test setup)
-	@echo "Frontend tests:"
-	@docker compose exec frontend-dev npm test || true
+test:       ## Run tests
 	@echo "Backend tests:"
-	@docker compose exec backend pytest -q || echo "Backend not running"
+	@docker compose exec backend-dev pytest -q || echo "Backend not running or tests failed"
 
 # Database commands (for future when you add PostgreSQL)
 db-shell:   ## Connect to database (when PostgreSQL service is added)

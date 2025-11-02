@@ -39,18 +39,31 @@ make dev
 ```
 
 This will:
-- Build the frontend development container
-- Start the Angular development server
+- Build the frontend and backend development containers
+- Start the Angular development server (frontend)
+- Start the FastAPI development server (backend)
 - Mount your local files for hot reload
-- Make the app available at `http://localhost:4200`
+- Make the frontend available at `http://localhost:4200`
+- Make the backend API available at `http://localhost:8000`
 
-#### 3. Access the Application
+#### 3. Initialize the Database
+
+Before using the backend, initialize the database schema:
+
+```bash
+make init-db
+```
+
+This creates the SQLite database and sets up all required tables.
+
+#### 4. Access the Application
 
 Once the containers are running:
 - **Frontend**: Open [http://localhost:4200](http://localhost:4200) in your browser
+- **Backend API**: Open [http://localhost:8000/docs](http://localhost:8000/docs) for interactive API documentation (Swagger UI)
 - The Angular dev server will automatically reload when you make changes to your code
 
-#### 4. Stop the Application
+#### 5. Stop the Application
 
 Press `Ctrl+C` in the terminal, or in a new terminal run:
 
@@ -81,44 +94,50 @@ Run `make help` to see all available commands with descriptions.
 | `make down` | Stop and remove containers, volumes, and networks |
 | `make logs` | Show logs from all services (follow mode, last 200 lines) |
 | `make frontend-logs` | Show only frontend logs |
-| `make backend-logs` | Show only backend logs (when enabled) |
+| `make backend-logs` | Show only backend logs |
 | `make restart` | Restart all services |
 | `make rebuild` | Rebuild containers from scratch (no cache) |
 | `make clean` | Stop containers, remove volumes, and prune system |
+| `make init-db` | Initialize database schema (SQLite) |
 
 ### Container Access
 
 | Command | Description |
 |---------|-------------|
 | `make frontend-shell` | Open shell in frontend container |
-| `make backend-shell` | Open shell in backend container (when enabled) |
+| `make backend-shell` | Open shell in backend container |
 
 ### Testing
 
 | Command | Description |
 |---------|-------------|
-| `make test` | Run tests for frontend and backend |
+| `make test` | Run backend tests (pytest) |
 
-### Future Commands (when backend/database are enabled)
+### Database
 
 | Command | Description |
 |---------|-------------|
-| `make db-shell` | Connect to database (when PostgreSQL service is added) |
-| `make makemigration` | Create new Alembic migration |
-| `make migrate` | Run database migrations |
+| `make init-db` | Initialize SQLite database schema |
 
 ## Development Workflow
 
 ### Making Code Changes
 
+**Frontend:**
 1. Edit your code in the `frontend/` directory on your local machine
 2. Changes are automatically synced to the container via volumes
 3. The Angular dev server detects changes and reloads automatically
 4. Refresh your browser to see updates
 
+**Backend:**
+1. Edit your code in the `backend/` directory on your local machine
+2. Changes are automatically synced to the container via volumes
+3. The FastAPI server automatically reloads when Python files change
+4. Test API changes using Swagger UI at `http://localhost:8000/docs`
+
 ### Adding/Updating Dependencies
 
-If you add new npm packages:
+**Frontend (npm packages):**
 
 1. Update `frontend/package.json` locally
 2. Rebuild the container to install new dependencies:
@@ -133,6 +152,22 @@ make frontend-shell
 npm install <package-name>
 ```
 
+**Backend (Python packages):**
+
+1. Update `backend/requirements.txt` locally
+2. Rebuild the container:
+   ```bash
+   make rebuild
+   ```
+
+Or access the container shell and install directly:
+```bash
+make backend-shell
+# Inside container:
+pip install <package-name>
+# Update requirements.txt: pip freeze > requirements.txt
+```
+
 ### Viewing Logs
 
 View logs from all services:
@@ -145,6 +180,18 @@ View logs from a specific service:
 make frontend-logs
 make backend-logs
 ```
+
+### Database Management
+
+**Initialize the database:**
+```bash
+make init-db
+```
+
+This creates the SQLite database schema. Run this after:
+- First time setup
+- After schema changes
+- If you delete `backend/database/data/portfolio.db`
 
 ### Restarting Services
 
@@ -208,6 +255,14 @@ make dev
 - Ensure volumes are properly mounted (check `docker-compose.yml`)
 - Try restarting the container: `make restart`
 - Check Angular polling is enabled (see `frontend/Dockerfile.dev`)
+- For backend: Check uvicorn reload is working (see `backend/Dockerfile.dev`)
+
+### Database errors
+
+If you see "no such table" errors:
+1. Make sure you've initialized the database: `make init-db`
+2. Check that `backend/database/data/portfolio.db` exists
+3. Verify the database schema files are in `backend/database/schema/`
 
 ### Need to clean everything
 
@@ -225,15 +280,19 @@ make clean
   - Hot reload: Enabled
   - File sync: Yes (via volumes)
 
-- **backend**: FastAPI backend (when enabled)
+- **backend-dev**: FastAPI backend with hot reload
   - Port: `8000`
-  - API docs: `http://localhost:8000/docs`
+  - API docs: `http://localhost:8000/docs` (Swagger UI)
+  - API root: `http://localhost:8000`
+  - Hot reload: Enabled (uvicorn --reload)
+  - Database: SQLite (`backend/database/data/portfolio.db`)
 
 ### Volumes
 
 - `./frontend:/app` - Syncs frontend code for hot reload
 - `/app/node_modules` - Keeps node_modules isolated in container
-- `./backend/database/data:/app/database/data` - Database persistence (when backend enabled)
+- `./backend:/app` - Syncs backend code for hot reload
+- `./backend/database/data:/app/database/data` - Database persistence (SQLite)
 
 ### Networks
 
