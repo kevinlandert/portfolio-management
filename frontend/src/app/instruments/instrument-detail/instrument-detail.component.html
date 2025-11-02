@@ -1,0 +1,136 @@
+<div class="instrument-detail-container">
+  <!-- Back Button -->
+  <div class="back-button">
+    <button mat-icon-button (click)="router.navigate(['/instruments'])" data-testid="btn-back">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span>Back to List</span>
+  </div>
+
+  <!-- Loading Spinner -->
+  @if (loading() && !instrument()) {
+    <div class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error() && !loading()) {
+    <mat-card class="error-card">
+      <mat-card-content>
+        <p>{{ error() }}</p>
+        <button mat-raised-button color="primary" (click)="retry()" data-testid="btn-retry">
+          Retry
+        </button>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Instrument Detail -->
+  @if (instrument() && !editing()) {
+    <mat-card class="detail-card">
+      <mat-card-header>
+        <div class="header-content">
+          <mat-card-title>
+            {{ instrument()!.short_name }} - {{ instrument()!.full_name }}
+          </mat-card-title>
+          <button 
+            mat-icon-button 
+            (click)="toggleEdit()"
+            data-testid="btn-edit">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- Summary Section -->
+        <div class="summary-section">
+          <h3>Summary</h3>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <span class="label">Symbol:</span>
+              <span class="value" data-testid="detail-short-name">{{ instrument()!.short_name }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Full Name:</span>
+              <span class="value" data-testid="detail-full-name">{{ instrument()!.full_name }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Type:</span>
+              <span class="value" data-testid="detail-type">{{ instrument()!.instrument_type }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">ISIN:</span>
+              <span class="value" data-testid="detail-isin">{{ instrument()!.isin || '-' }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Sector:</span>
+              <span class="value" data-testid="detail-sector">{{ instrument()!.sector || '-' }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Industry:</span>
+              <span class="value" data-testid="detail-industry">{{ instrument()!.industry || '-' }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Country:</span>
+              <span class="value" data-testid="detail-country">{{ instrument()!.country || '-' }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Original Currency:</span>
+              <span class="value" data-testid="detail-original-currency">{{ instrument()!.original_currency }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Interest Currency:</span>
+              <span class="value" data-testid="detail-interest-currency">{{ instrument()!.interest_currency }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Last Price:</span>
+              <span class="value" data-testid="detail-last-price">
+                {{ instrument()!.last_price ? (instrument()!.last_price | number:'1.2-2') : '-' }}
+              </span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Yahoo Symbol:</span>
+              <span class="value" data-testid="detail-yahoo">{{ instrument()!.yahoo_symbol || '-' }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Preferred Exchange:</span>
+              <span class="value" data-testid="detail-exchange">{{ instrument()!.preferred_exchange || '-' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metadata Section -->
+        @if (getMetadataEntries().length > 0) {
+          <div class="metadata-section">
+            <h3>Metadata</h3>
+            <table mat-table [dataSource]="getMetadataEntries()" class="metadata-table">
+              <ng-container matColumnDef="key">
+                <th mat-header-cell *matHeaderCellDef>Key</th>
+                <td mat-cell *matCellDef="let entry" data-testid="metadata-key">{{ entry.key }}</td>
+              </ng-container>
+              <ng-container matColumnDef="value">
+                <th mat-header-cell *matHeaderCellDef>Value</th>
+                <td mat-cell *matCellDef="let entry" data-testid="metadata-value">{{ entry.value }}</td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="['key', 'value']"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['key', 'value']"></tr>
+            </table>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Edit Form -->
+  @if (instrument() && editing()) {
+    <app-instrument-form
+      [instrument]="instrument()!"
+      mode="edit"
+      (save)="onSave($event)"
+      (cancel)="onCancel()"
+      data-testid="instrument-form-edit">
+    </app-instrument-form>
+  }
+</div>

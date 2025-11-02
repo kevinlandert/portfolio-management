@@ -94,30 +94,33 @@ Open your browser and navigate to:
 2. Click "Try it out"
 3. Replace the example JSON with:
 
-```json
-{
-  "short_name": "AAPL",
-  "full_name": "Apple Inc.",
-  "instrument_type": "stock",
-  "original_currency": "USD",
-  "interest_currency": "USD",
-  "yahoo_symbol": "AAPL"
-}
-```
+       ```json
+       {
+         "short_name": "AAPL",
+         "full_name": "Apple Inc.",
+         "instrument_type": "Equity",
+         "original_currency": "USD",
+         "interest_currency": "USD",
+         "yahoo_symbol": "AAPL"
+       }
+       ```
 
 4. Click "Execute"
 5. You'll see:
    - **Response Code:** `201 Created`
    - **Response Body:** The created instrument with `instrument_id`, `created_at`, etc.
 
-**Note:** `original_currency` and `interest_currency` are required fields.
+       **Note:** 
+       - `original_currency` and `interest_currency` are required fields
+       - `instrument_type` must be one of: `Equity`, `Bond`, `ETF`, or `Future`
+       - `original_currency` and `interest_currency` must be one of: `CHF`, `EUR`, or `USD`
 
 #### 5. Example: Getting All Instruments
 
 1. Navigate to `GET /api/v1/instruments`
 2. Click "Try it out"
 3. Optionally add query parameters:
-   - `instrument_type`: `stock`
+   - `instrument_type`: `Equity` (must be Equity, Bond, ETF, or Future)
    - `sector`: `Technology`
    - `country`: `USA`
    - `limit`: `10`
@@ -175,7 +178,7 @@ For a more documentation-focused view, access ReDoc at:
 - `DELETE /api/v1/instruments/{instrument_id}` - Delete an instrument
 
 **Query Parameters for GET /api/v1/instruments:**
-- `instrument_type`: Filter by type (e.g., "stock", "bond", "etf")
+- `instrument_type`: Filter by type (must be: Equity, Bond, ETF, or Future)
 - `sector`: Filter by industry sector
 - `country`: Filter by country
 - `limit`: Maximum number of results (1-1000, default: 100)

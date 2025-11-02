@@ -1,0 +1,49 @@
+.instrument-form {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+mat-card {
+  padding: 24px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+mat-card-actions {
+  padding: 16px 24px;
+  margin: 0;
+}
+
+mat-card-actions button {
+  margin-left: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .instrument-form {
+    padding: 8px;
+  }
+
+  mat-card {
+    padding: 16px;
+  }
+}
+

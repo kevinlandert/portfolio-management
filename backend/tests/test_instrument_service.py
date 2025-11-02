@@ -26,7 +26,7 @@ class TestInstrumentServiceCreate:
         assert result.short_name == "AAPL"
         assert result.full_name == "Apple Inc."
         assert result.isin == "US0378331005"
-        assert result.instrument_type == "stock"
+        assert result.instrument_type == "Equity"
         assert result.last_price == 150.25
         assert result.created_at is not None
         assert result.updated_at is not None
@@ -40,7 +40,7 @@ class TestInstrumentServiceCreate:
         assert result.instrument_id > 0
         assert result.short_name == "MSFT"
         assert result.full_name == "Microsoft Corporation"
-        assert result.instrument_type == "stock"
+        assert result.instrument_type == "Equity"
         assert result.isin is None
         assert result.sector is None
     
@@ -49,7 +49,7 @@ class TestInstrumentServiceCreate:
         instrument_data = {
             "short_name": "BOND",
             "full_name": "Test Bond",
-            "instrument_type": "bond",
+            "instrument_type": "Bond",
             "original_currency": "USD",
             "interest_currency": "USD",
             "issue_date": date(2020, 1, 1),
@@ -267,7 +267,7 @@ class TestInstrumentServiceEdgeCases:
         data = {
             "short_name": "LONG",
             "full_name": long_text,
-            "instrument_type": "stock",
+            "instrument_type": "Equity",
             "original_currency": "USD",
             "interest_currency": "USD",
             "free_text_0": long_text,
@@ -282,7 +282,7 @@ class TestInstrumentServiceEdgeCases:
         data = {
             "short_name": "SPEC'IAL",
             "full_name": "Test & Co. - \"Special\" Characters",
-            "instrument_type": "stock",
+            "instrument_type": "Equity",
             "original_currency": "USD",
             "interest_currency": "USD",
         }
@@ -299,7 +299,7 @@ class TestInstrumentServiceEdgeCases:
         data = {
             "short_name": "JSON",
             "full_name": "JSON Test",
-            "instrument_type": "stock",
+            "instrument_type": "Equity",
             "original_currency": "USD",
             "interest_currency": "USD",
             "metadata_json": json.dumps(metadata),

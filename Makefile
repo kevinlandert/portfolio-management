@@ -1,4 +1,4 @@
-.PHONY: help dev up down logs frontend-shell backend-shell test clean rebuild
+.PHONY: help dev up down logs frontend-shell backend-shell test test-backend test-frontend test-clean clean rebuild
 
 help:        ## Show this help message
 	@echo 'Usage: make [target]'
@@ -44,7 +44,16 @@ clean:      ## Stop containers and remove volumes
 	docker compose down -v
 	docker system prune -f
 
-test:       ## Run tests with coverage
+test:       ## Run all tests (frontend + backend) with coverage
+	@echo "🧪 Running all tests..."
+	@echo ""
+	@$(MAKE) test-backend
+	@echo ""
+	@$(MAKE) test-frontend
+	@echo ""
+	@echo "✅ All tests completed!"
+
+test-backend: ## Run backend tests with coverage
 	@echo "Backend tests:"
 	@docker compose up -d backend-dev 2>/dev/null || true
 	@docker compose exec backend-dev pytest --cov=app --cov-report=term-missing --cov-report=html -q || echo "Tests failed"
@@ -53,16 +62,29 @@ test:       ## Run tests with coverage
 	@echo "   file://$$(pwd)/backend/htmlcov/index.html"
 	@echo "   (Click the link above or open in browser)"
 
-test-clean: ## Run tests in fresh container with coverage (thorough - rebuilds and tears down)
+test-frontend: ## Run frontend tests locally (faster than Docker)
+	@echo "Frontend tests:"
+	@echo "Running tests locally for faster execution..."
+	@cd frontend && npm test -- --no-watch --browsers=ChromeHeadless || (echo "Frontend tests failed" && exit 1)
+	@echo ""
+	@echo "✅ Frontend tests completed"
+
+test-clean: ## Run all tests in fresh containers (backend) and locally (frontend)
+	@echo "🧪 Running all tests (clean environment)..."
+	@echo ""
 	@echo "Backend tests (clean):"
 	@docker compose up -d --build backend-dev
 	@docker compose exec backend-dev pytest --cov=app --cov-report=term-missing --cov-report=html -q || echo "Tests failed"
 	@docker compose stop backend-dev
 	@echo ""
-	@echo "📊 Coverage report generated:"
+	@echo "📊 Backend coverage report generated:"
 	@echo "   file://$$(pwd)/backend/htmlcov/index.html"
-	@echo "   (Click the link above or open in browser)"
-	@echo "Test container stopped"
+	@echo ""
+	@echo "Frontend tests (local):"
+	@cd frontend && npm test -- --no-watch --browsers=ChromeHeadless || (echo "Frontend tests failed" && exit 1)
+	@echo ""
+	@echo "✅ All tests completed"
+	@echo "📊 Backend coverage: file://$$(pwd)/backend/htmlcov/index.html"
 
 # Database commands (for future when you add PostgreSQL)
 db-shell:   ## Connect to database (when PostgreSQL service is added)

@@ -3,6 +3,20 @@ FROM node:20-alpine
 # Set working directory
 WORKDIR /app
 
+# Install Chromium and dependencies for headless browser testing
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont
+
+# Set environment variable for Chromium
+ENV CHROME_BIN=/usr/bin/chromium-browser
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
 # Install Angular CLI globally for convenience
 RUN npm install -g @angular/cli@19
 
@@ -19,4 +33,6 @@ COPY . .
 EXPOSE 4200
 
 # Start dev server with hot reload
-CMD ["ng", "serve", "--host", "0.0.0.0", "--port", "4200", "--poll", "2000"]
+# Note: The volume mount overwrites files, so we ensure Docker proxy config is used
+# by copying it at runtime before starting the server
+CMD ["sh", "-c", "if [ -f proxy.conf.docker.json ]; then cp proxy.conf.docker.json proxy.conf.json; fi && ng serve --host 0.0.0.0 --port 4200 --poll 2000"]

@@ -1,0 +1,191 @@
+<div class="instrument-list-container">
+  <!-- Toolbar -->
+  <mat-toolbar class="list-toolbar">
+    <span class="toolbar-title">Instruments</span>
+    <span class="toolbar-spacer"></span>
+    <button 
+      mat-raised-button 
+      color="primary" 
+      (click)="createNew()"
+      data-testid="btn-create-instrument">
+      <mat-icon>add</mat-icon>
+      New Instrument
+    </button>
+  </mat-toolbar>
+
+  <!-- Search and Filters -->
+  <app-instrument-search-bar
+    [searchControl]="searchControl"
+    [filters]="filters"
+    [options]="filterOptions"
+    (clearSearchClick)="onClearSearch()"
+    (typeFilterChange)="onTypeFilterChange($event)"
+    (sectorFilterChange)="onSectorFilterChange($event)"
+    (countryFilterChange)="onCountryFilterChange($event)"
+    (clearAllFiltersClick)="onClearAllFilters()">
+  </app-instrument-search-bar>
+
+  <!-- Loading Spinner -->
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error() && !loading()) {
+    <mat-card class="error-card">
+      <mat-card-content>
+        <p>{{ error() }}</p>
+        <button mat-raised-button color="primary" (click)="retry()" data-testid="btn-retry">
+          Retry
+        </button>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Empty State -->
+  @if (!loading() && !error() && totalItems() === 0) {
+    <mat-card class="empty-state-card">
+      <mat-card-content>
+        <div class="empty-state-container">
+          <mat-icon class="empty-state-icon">account_balance</mat-icon>
+          <h3>No Instruments Found</h3>
+          @if (hasActiveFilters()) {
+            <p>No instruments match your search or filters.</p>
+            <button 
+              mat-raised-button 
+              color="primary" 
+              (click)="createNew()"
+              data-testid="btn-create-first-instrument">
+              <mat-icon>add</mat-icon>
+              Create Instrument
+            </button>
+          } @else {
+            <p>Get started by creating your first instrument.</p>
+            <button 
+              mat-raised-button 
+              color="primary" 
+              (click)="createNew()"
+              data-testid="btn-create-first-instrument">
+              <mat-icon>add</mat-icon>
+              Create First Instrument
+            </button>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Table -->
+  @if (!loading() && !error() && totalItems() > 0) {
+    <mat-card class="table-card">
+      <div class="table-container">
+        <table 
+          mat-table 
+          [dataSource]="dataSource" 
+          class="instruments-table"
+          data-testid="table-instruments">
+          
+          <!-- Short Name Column -->
+          <ng-container matColumnDef="short_name">
+            <th mat-header-cell *matHeaderCellDef>Symbol</th>
+            <td mat-cell *matCellDef="let instrument" data-testid="cell-short-name">
+              {{ instrument.short_name }}
+            </td>
+          </ng-container>
+
+          <!-- Full Name Column -->
+          <ng-container matColumnDef="full_name">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let instrument" data-testid="cell-full-name">
+              {{ instrument.full_name }}
+            </td>
+          </ng-container>
+
+          <!-- Instrument Type Column -->
+          <ng-container matColumnDef="instrument_type">
+            <th mat-header-cell *matHeaderCellDef>Type</th>
+            <td mat-cell *matCellDef="let instrument" data-testid="cell-type">
+              {{ instrument.instrument_type }}
+            </td>
+          </ng-container>
+
+          <!-- Sector Column -->
+          <ng-container matColumnDef="sector">
+            <th mat-header-cell *matHeaderCellDef>Sector</th>
+            <td mat-cell *matCellDef="let instrument" data-testid="cell-sector">
+              {{ instrument.sector || '-' }}
+            </td>
+          </ng-container>
+
+          <!-- Country Column -->
+          <ng-container matColumnDef="country">
+            <th mat-header-cell *matHeaderCellDef>Country</th>
+            <td mat-cell *matCellDef="let instrument" data-testid="cell-country">
+              {{ instrument.country || '-' }}
+            </td>
+          </ng-container>
+
+          <!-- Currency Column -->
+          <ng-container matColumnDef="original_currency">
+            <th mat-header-cell *matHeaderCellDef>Currency</th>
+            <td mat-cell *matCellDef="let instrument" data-testid="cell-currency">
+              {{ instrument.original_currency }}
+            </td>
+          </ng-container>
+
+          <!-- Last Price Column -->
+          <ng-container matColumnDef="last_price">
+            <th mat-header-cell *matHeaderCellDef>Last Price</th>
+            <td mat-cell *matCellDef="let instrument" data-testid="cell-price">
+              {{ instrument.last_price ? (instrument.last_price | number:'1.2-2') : '-' }}
+            </td>
+          </ng-container>
+
+          <!-- Yahoo Symbol Column -->
+          <ng-container matColumnDef="yahoo_symbol">
+            <th mat-header-cell *matHeaderCellDef>Yahoo Symbol</th>
+            <td mat-cell *matCellDef="let instrument" data-testid="cell-yahoo">
+              {{ instrument.yahoo_symbol || '-' }}
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let instrument" data-testid="cell-actions">
+              <app-instrument-actions
+                [instrument]="instrument"
+                (view)="onView($event)"
+                (edit)="onEdit($event)"
+                (delete)="onDelete($event)">
+              </app-instrument-actions>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns" [attr.data-testid]="'row-instrument-' + row.instrument_id"></tr>
+
+          <!-- No data row -->
+          <tr class="mat-row" *matNoDataRow>
+            <td class="mat-cell" [attr.colspan]="displayedColumns.length" data-testid="no-data">
+              No instruments found
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Paginator -->
+      <mat-paginator
+        [length]="totalItems()"
+        [pageSize]="pageSize()"
+        [pageIndex]="currentPage()"
+        [pageSizeOptions]="[5, 10, 25, 50, 100]"
+        (page)="onPageChange($event)"
+        showFirstLastButtons
+        data-testid="paginator">
+      </mat-paginator>
+    </mat-card>
+  }
+</div>

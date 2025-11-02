@@ -1,0 +1,258 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit(false)" class="instrument-form">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>{{ mode === 'create' ? 'Create Instrument' : 'Edit Instrument' }}</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="form-grid">
+        <!-- Short Name (Symbol) -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Symbol *</mat-label>
+          <input 
+            matInput 
+            formControlName="short_name"
+            placeholder="AAPL"
+            (blur)="form.get('short_name')?.setValue(form.get('short_name')?.value?.toUpperCase() || '')"
+            data-testid="input-short-name">
+          <mat-hint>Uppercase letters, numbers, dots, and hyphens only (max 15 chars)</mat-hint>
+          @if (hasError('short_name')) {
+            <mat-error>{{ getErrorMessage('short_name') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Full Name -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Full Name *</mat-label>
+          <input 
+            matInput 
+            formControlName="full_name"
+            placeholder="Apple Inc."
+            data-testid="input-full-name">
+          @if (hasError('full_name')) {
+            <mat-error>{{ getErrorMessage('full_name') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Instrument Type -->
+        <mat-form-field appearance="outline">
+          <mat-label>Instrument Type *</mat-label>
+          <mat-select formControlName="instrument_type" data-testid="select-instrument-type">
+            <mat-option value="">-- Select Type --</mat-option>
+            @for (type of instrumentTypes; track type) {
+              <mat-option [value]="type">{{ type }}</mat-option>
+            }
+          </mat-select>
+          @if (hasError('instrument_type')) {
+            <mat-error>{{ getErrorMessage('instrument_type') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- ISIN -->
+        <mat-form-field appearance="outline">
+          <mat-label>ISIN</mat-label>
+          <input 
+            matInput 
+            formControlName="isin"
+            placeholder="US0378331005"
+            (blur)="form.get('isin')?.setValue(form.get('isin')?.value?.toUpperCase() || '')"
+            data-testid="input-isin">
+          <mat-hint>Format: 2 letters + 9 alphanumeric + 1 digit</mat-hint>
+          @if (hasError('isin')) {
+            <mat-error>{{ getErrorMessage('isin') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Sector -->
+        <mat-form-field appearance="outline">
+          <mat-label>Sector</mat-label>
+          <input 
+            matInput 
+            formControlName="sector"
+            placeholder="Technology"
+            data-testid="input-sector">
+        </mat-form-field>
+
+        <!-- Industry -->
+        <mat-form-field appearance="outline">
+          <mat-label>Industry</mat-label>
+          <input 
+            matInput 
+            formControlName="industry"
+            placeholder="Consumer Electronics"
+            data-testid="input-industry">
+        </mat-form-field>
+
+        <!-- Country -->
+        <mat-form-field appearance="outline">
+          <mat-label>Country</mat-label>
+          <input 
+            matInput 
+            formControlName="country"
+            placeholder="USA"
+            data-testid="input-country">
+        </mat-form-field>
+
+        <!-- Original Currency -->
+        <mat-form-field appearance="outline">
+          <mat-label>Original Currency *</mat-label>
+          <mat-select formControlName="original_currency" data-testid="select-original-currency">
+            <mat-option value="">-- Select Currency --</mat-option>
+            @for (currency of currencies; track currency) {
+              <mat-option [value]="currency">{{ currency }}</mat-option>
+            }
+          </mat-select>
+          @if (hasError('original_currency')) {
+            <mat-error>{{ getErrorMessage('original_currency') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Interest Currency -->
+        <mat-form-field appearance="outline">
+          <mat-label>Interest Currency *</mat-label>
+          <mat-select formControlName="interest_currency" data-testid="select-interest-currency">
+            <mat-option value="">-- Select Currency --</mat-option>
+            @for (currency of currencies; track currency) {
+              <mat-option [value]="currency">{{ currency }}</mat-option>
+            }
+          </mat-select>
+          @if (hasError('interest_currency')) {
+            <mat-error>{{ getErrorMessage('interest_currency') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Statistical Currency -->
+        <mat-form-field appearance="outline">
+          <mat-label>Statistical Currency</mat-label>
+          <mat-select formControlName="statistical_currency" data-testid="select-statistical-currency">
+            <mat-option value="">-- Select Currency --</mat-option>
+            @for (currency of currencies; track currency) {
+              <mat-option [value]="currency">{{ currency }}</mat-option>
+            }
+          </mat-select>
+          @if (hasError('statistical_currency')) {
+            <mat-error>{{ getErrorMessage('statistical_currency') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Preferred Exchange -->
+        <mat-form-field appearance="outline">
+          <mat-label>Preferred Exchange</mat-label>
+          <input 
+            matInput 
+            formControlName="preferred_exchange"
+            placeholder="NASDAQ"
+            data-testid="input-exchange">
+        </mat-form-field>
+
+        <!-- Yahoo Symbol -->
+        <mat-form-field appearance="outline">
+          <mat-label>Yahoo Symbol</mat-label>
+          <input 
+            matInput 
+            formControlName="yahoo_symbol"
+            placeholder="AAPL"
+            (blur)="form.get('yahoo_symbol')?.setValue(form.get('yahoo_symbol')?.value?.toUpperCase() || '')"
+            data-testid="input-yahoo-symbol">
+          @if (hasError('yahoo_symbol')) {
+            <mat-error>{{ getErrorMessage('yahoo_symbol') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Reuters Symbol -->
+        <mat-form-field appearance="outline">
+          <mat-label>Reuters Symbol</mat-label>
+          <input 
+            matInput 
+            formControlName="reuters_symbol"
+            placeholder="AAPL.O"
+            data-testid="input-reuters-symbol">
+        </mat-form-field>
+
+        <!-- Telekurs Symbol -->
+        <mat-form-field appearance="outline">
+          <mat-label>Telekurs Symbol</mat-label>
+          <input 
+            matInput 
+            formControlName="telekurs_symbol"
+            data-testid="input-telekurs-symbol">
+        </mat-form-field>
+
+        <!-- Last Price -->
+        <mat-form-field appearance="outline">
+          <mat-label>Last Price</mat-label>
+          <input 
+            matInput 
+            type="number"
+            formControlName="last_price"
+            placeholder="175.50"
+            step="0.01"
+            min="0"
+            data-testid="input-last-price">
+          @if (hasError('last_price')) {
+            <mat-error>{{ getErrorMessage('last_price') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Last Price Date -->
+        <mat-form-field appearance="outline">
+          <mat-label>Last Price Date</mat-label>
+          <input 
+            matInput 
+            type="date"
+            formControlName="last_price_date"
+            data-testid="input-last-price-date">
+        </mat-form-field>
+
+        <!-- Free Text Fields -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Free Text 0</mat-label>
+          <textarea 
+            matInput 
+            formControlName="free_text_0"
+            rows="2"
+            data-testid="input-free-text-0"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Metadata (JSON)</mat-label>
+          <textarea 
+            matInput 
+            formControlName="metadata_json"
+            rows="3"
+            placeholder='{"key": "value"}'
+            data-testid="input-metadata"></textarea>
+        </mat-form-field>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button 
+        type="button"
+        mat-button 
+        (click)="onCancel()"
+        data-testid="btn-cancel">
+        Cancel
+      </button>
+      <button 
+        type="button"
+        mat-button 
+        (click)="onSubmit(true)"
+        [disabled]="isSaveDisabled()"
+        data-testid="btn-save-continue">
+        Save and Continue
+      </button>
+      <button 
+        type="submit"
+        mat-raised-button 
+        color="primary"
+        [disabled]="isSaveDisabled()"
+        data-testid="btn-save">
+        @if (submitting()) {
+          <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+        }
+        Save
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</form>

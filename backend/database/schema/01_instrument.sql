@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS instrument (
     full_name TEXT NOT NULL,                -- Full legal name (e.v., "VanEck Vectors Gold Miners ETF")
 
     -- Instrument classification
-    instrument_type TEXT NOT NULL,          -- Type: "stock", "bond", "etf", "option", "future", etc.
+    instrument_type TEXT NOT NULL,          -- Type: "Equity", "Bond", "ETF", or "Future"
     sector TEXT,                            -- Industry sector (e.g., "Technology", "Healthcare")
     industry TEXT,                          -- Industry classification (e.g., "Software", "Biotech")
     country TEXT,                           -- Country of origin/listing

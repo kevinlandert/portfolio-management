@@ -10,6 +10,7 @@ from pathlib import Path
 from datetime import datetime, date
 from typing import Optional, List
 from app.schemas.instrument import InstrumentCreate, InstrumentUpdate, InstrumentResponse
+from app.models.enums import InstrumentType, Currency
 
 # Add backend directory to path for database imports
 backend_dir = Path(__file__).parent.parent.parent
@@ -30,28 +31,48 @@ class InstrumentService:
         
         Returns:
             List of InstrumentResponse objects
+            
+        Raises:
+            Exception: If database query fails or data conversion fails
         """
-        query = """
-            SELECT 
-                instrument_id, short_name, full_name, isin,
-                instrument_type, sector, industry, country,
-                original_currency, interest_currency, statistical_currency,
-                interest_rate, interest_period,
-                last_price, last_price_date,
-                issue_date, expiration_date, first_call_date, first_call_percentage,
-                coupon_date_0, coupon_date_1, coupon_date_2, coupon_date_3,
-                preferred_exchange, restriced_exchange, contract_size, initial_margin,
-                telekurs_symbol, reuters_symbol, yahoo_symbol,
-                sector_allocation,
-                free_text_0, free_text_1, free_text_2, free_text_3,
-                metadata_json,
-                created_at, updated_at
-            FROM instrument
-            ORDER BY instrument_id
-        """
-        
-        rows = self.db.execute_query(query)
-        return [self._row_to_instrument(row) for row in rows]
+        try:
+            query = """
+                SELECT 
+                    instrument_id, short_name, full_name, isin,
+                    instrument_type, sector, industry, country,
+                    original_currency, interest_currency, statistical_currency,
+                    interest_rate, interest_period,
+                    last_price, last_price_date,
+                    issue_date, expiration_date, first_call_date, first_call_percentage,
+                    coupon_date_0, coupon_date_1, coupon_date_2, coupon_date_3,
+                    preferred_exchange, restriced_exchange, contract_size, initial_margin,
+                    telekurs_symbol, reuters_symbol, yahoo_symbol,
+                    sector_allocation,
+                    free_text_0, free_text_1, free_text_2, free_text_3,
+                    metadata_json,
+                    created_at, updated_at
+                FROM instrument
+                ORDER BY instrument_id
+            """
+            
+            rows = self.db.execute_query(query)
+            instruments = []
+            for i, row in enumerate(rows):
+                try:
+                    instruments.append(self._row_to_instrument(row))
+                except Exception as e:
+                    # Log error but continue processing other rows
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Error converting row {i} (instrument_id={row[0] if row else 'unknown'}): {str(e)}")
+                    raise  # Re-raise to fail fast and show the error
+            
+            return instruments
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.exception(f"Error retrieving instruments from database: {str(e)}")
+            raise
     
     def get_instrument(self, instrument_id: int) -> Optional[InstrumentResponse]:
         """
@@ -120,13 +141,13 @@ class InstrumentService:
             instrument.short_name,
             instrument.full_name,
             instrument.isin,
-            instrument.instrument_type,
+            instrument.instrument_type.value if hasattr(instrument.instrument_type, 'value') else instrument.instrument_type,
             instrument.sector,
             instrument.industry,
             instrument.country,
-            instrument.original_currency,
-            instrument.interest_currency,
-            instrument.statistical_currency,
+            instrument.original_currency.value if hasattr(instrument.original_currency, 'value') else instrument.original_currency,
+            instrument.interest_currency.value if hasattr(instrument.interest_currency, 'value') else instrument.interest_currency,
+            instrument.statistical_currency.value if instrument.statistical_currency and hasattr(instrument.statistical_currency, 'value') else instrument.statistical_currency,
             instrument.interest_rate,
             instrument.interest_period,
             instrument.last_price,
@@ -179,13 +200,13 @@ class InstrumentService:
             'short_name': instrument.short_name,
             'full_name': instrument.full_name,
             'isin': instrument.isin,
-            'instrument_type': instrument.instrument_type,
+            'instrument_type': instrument.instrument_type.value if instrument.instrument_type and hasattr(instrument.instrument_type, 'value') else instrument.instrument_type,
             'sector': instrument.sector,
             'industry': instrument.industry,
             'country': instrument.country,
-            'original_currency': instrument.original_currency,
-            'interest_currency': instrument.interest_currency,
-            'statistical_currency': instrument.statistical_currency,
+            'original_currency': instrument.original_currency.value if instrument.original_currency and hasattr(instrument.original_currency, 'value') else instrument.original_currency,
+            'interest_currency': instrument.interest_currency.value if instrument.interest_currency and hasattr(instrument.interest_currency, 'value') else instrument.interest_currency,
+            'statistical_currency': instrument.statistical_currency.value if instrument.statistical_currency and hasattr(instrument.statistical_currency, 'value') else instrument.statistical_currency,
             'interest_rate': instrument.interest_rate,
             'interest_period': instrument.interest_period,
             'last_price': instrument.last_price,
@@ -264,35 +285,68 @@ class InstrumentService:
             
         Returns:
             InstrumentResponse object
+            
+        Raises:
+            ValueError: If row data is invalid or cannot be converted
         """
-        # Parse datetime strings from SQLite
-        def parse_datetime(dt_str):
-            if not dt_str:
-                return None
-            try:
-                return datetime.fromisoformat(dt_str.replace('Z', '+00:00'))
-            except:
-                return datetime.strptime(dt_str, '%Y-%m-%d %H:%M:%S')
-        
-        def parse_date(d_str):
-            if not d_str:
-                return None
-            if isinstance(d_str, str):
-                return date.fromisoformat(d_str)
-            return d_str
-        
-        return InstrumentResponse(
+        try:
+            # Parse datetime strings from SQLite
+            def parse_datetime(dt_str):
+                if not dt_str:
+                    return None
+                try:
+                    return datetime.fromisoformat(dt_str.replace('Z', '+00:00'))
+                except (ValueError, AttributeError):
+                    try:
+                        return datetime.strptime(dt_str, '%Y-%m-%d %H:%M:%S')
+                    except (ValueError, AttributeError):
+                        return None
+            
+            def parse_date(d_str):
+                if not d_str:
+                    return None
+                if isinstance(d_str, str):
+                    try:
+                        return date.fromisoformat(d_str)
+                    except (ValueError, AttributeError):
+                        return None
+                return d_str if isinstance(d_str, date) else None
+            
+            # Convert instrument_type and currencies to enum values if they match
+            instrument_type_val = row[4]
+            if instrument_type_val and instrument_type_val in InstrumentType.values():
+                instrument_type_val = InstrumentType(instrument_type_val)
+            elif not instrument_type_val:
+                raise ValueError(f"instrument_type cannot be null (row: {row[0]})")
+            
+            original_currency_val = row[8]
+            if original_currency_val and original_currency_val in Currency.values():
+                original_currency_val = Currency(original_currency_val)
+            elif not original_currency_val:
+                raise ValueError(f"original_currency cannot be null (row: {row[0]})")
+                
+            interest_currency_val = row[9]
+            if interest_currency_val and interest_currency_val in Currency.values():
+                interest_currency_val = Currency(interest_currency_val)
+            elif not interest_currency_val:
+                raise ValueError(f"interest_currency cannot be null (row: {row[0]})")
+                
+            statistical_currency_val = row[10] if len(row) > 10 and row[10] else None
+            if statistical_currency_val and statistical_currency_val in Currency.values():
+                statistical_currency_val = Currency(statistical_currency_val)
+            
+            return InstrumentResponse(
             instrument_id=row[0],
             short_name=row[1],
             full_name=row[2],
             isin=row[3],
-            instrument_type=row[4],
+            instrument_type=instrument_type_val,
             sector=row[5],
             industry=row[6],
             country=row[7],
-            original_currency=row[8],
-            interest_currency=row[9],
-            statistical_currency=row[10],
+            original_currency=original_currency_val,
+            interest_currency=interest_currency_val,
+            statistical_currency=statistical_currency_val,
             interest_rate=row[11],
             interest_period=row[12],
             last_price=row[13],
@@ -318,6 +372,8 @@ class InstrumentService:
             free_text_2=row[33],
             free_text_3=row[34],
             metadata_json=row[35],
-            created_at=parse_datetime(row[36]),
-            updated_at=parse_datetime(row[37]),
-        )
+                created_at=parse_datetime(row[36]) if len(row) > 36 else None,
+                updated_at=parse_datetime(row[37]) if len(row) > 37 else None,
+            )
+        except (IndexError, ValueError, TypeError) as e:
+            raise ValueError(f"Error converting database row to InstrumentResponse: {str(e)}. Row length: {len(row) if row else 0}, Row data: {row[:5] if row else 'None'}")

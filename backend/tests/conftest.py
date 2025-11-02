@@ -76,7 +76,7 @@ def sample_instrument_data():
         "short_name": "AAPL",
         "full_name": "Apple Inc.",
         "isin": "US0378331005",
-        "instrument_type": "stock",
+        "instrument_type": "Equity",
         "sector": "Technology",
         "industry": "Consumer Electronics",
         "country": "USA",
@@ -117,7 +117,7 @@ def sample_instrument_minimal():
     return {
         "short_name": "MSFT",
         "full_name": "Microsoft Corporation",
-        "instrument_type": "stock",
+        "instrument_type": "Equity",
         "original_currency": "USD",
         "interest_currency": "USD",
     }

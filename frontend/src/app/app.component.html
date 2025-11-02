@@ -1,5 +1,20 @@
-This is a test change.
+<div class="app-container">
+  <mat-toolbar color="primary">
+    <span class="app-title">{{ title }}</span>
+    <span class="spacer"></span>
+    <nav class="nav-links">
+      <a 
+        mat-button 
+        routerLink="/instruments" 
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{exact: false}">
+        <mat-icon>account_balance</mat-icon>
+        Instruments
+      </a>
+    </nav>
+  </mat-toolbar>
 
-
-
-<router-outlet />
+  <main class="main-content">
+    <router-outlet />
+  </main>
+</div>

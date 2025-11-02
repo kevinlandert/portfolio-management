@@ -1,0 +1,82 @@
+<mat-card class="filters-card">
+  <!-- Search -->
+  <div class="search-container">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search</mat-label>
+      <input 
+        matInput 
+        [formControl]="searchControl"
+        placeholder="Search by name, symbol, ISIN..."
+        data-testid="input-search">
+      <mat-icon matSuffix>search</mat-icon>
+      @if (searchControl.value) {
+        <button 
+          mat-icon-button 
+          matSuffix 
+          (click)="clearSearch()"
+          data-testid="btn-clear-search">
+          <mat-icon>clear</mat-icon>
+        </button>
+      }
+    </mat-form-field>
+  </div>
+
+  <!-- Filter Chips -->
+  <div class="filters-container">
+    <!-- Type Filter -->
+    @if (options().types.length > 0) {
+      <div class="filter-group">
+        <span class="filter-label">Type:</span>
+        @for (type of options().types; track type) {
+          <mat-chip 
+            [class.selected]="filters().selectedType === type"
+            (click)="toggleTypeFilter(type)"
+            [attr.data-testid]="'chip-type-' + type">
+            {{ type }}
+          </mat-chip>
+        }
+      </div>
+    }
+
+    <!-- Sector Filter -->
+    @if (options().sectors.length > 0) {
+      <div class="filter-group">
+        <span class="filter-label">Sector:</span>
+        @for (sector of options().sectors; track sector) {
+          <mat-chip 
+            [class.selected]="filters().selectedSector === sector"
+            (click)="toggleSectorFilter(sector)"
+            [attr.data-testid]="'chip-sector-' + sector">
+            {{ sector }}
+          </mat-chip>
+        }
+      </div>
+    }
+
+    <!-- Country Filter -->
+    @if (options().countries.length > 0) {
+      <div class="filter-group">
+        <span class="filter-label">Country:</span>
+        @for (country of options().countries; track country) {
+          <mat-chip 
+            [class.selected]="filters().selectedCountry === country"
+            (click)="toggleCountryFilter(country)"
+            [attr.data-testid]="'chip-country-' + country">
+            {{ country }}
+          </mat-chip>
+        }
+      </div>
+    }
+
+    <!-- Clear All Filters -->
+    @if (hasActiveFilters()) {
+      <button 
+        mat-button 
+        (click)="clearAllFilters()"
+        data-testid="btn-clear-filters">
+        Clear Filters
+      </button>
+    }
+  </div>
+</mat-card>
+

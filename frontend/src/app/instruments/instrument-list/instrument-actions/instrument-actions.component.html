@@ -1,0 +1,30 @@
+<button 
+  mat-icon-button 
+  [matMenuTriggerFor]="menu"
+  [attr.data-testid]="'btn-menu-' + instrument.instrument_id">
+  <mat-icon>more_vert</mat-icon>
+</button>
+<mat-menu #menu="matMenu">
+  <button 
+    mat-menu-item 
+    (click)="onView()"
+    [attr.data-testid]="'btn-view-' + instrument.instrument_id">
+    <mat-icon>visibility</mat-icon>
+    <span>View</span>
+  </button>
+  <button 
+    mat-menu-item 
+    (click)="onEdit()"
+    [attr.data-testid]="'btn-edit-' + instrument.instrument_id">
+    <mat-icon>edit</mat-icon>
+    <span>Edit</span>
+  </button>
+  <button 
+    mat-menu-item 
+    (click)="onDelete()"
+    [attr.data-testid]="'btn-delete-' + instrument.instrument_id">
+    <mat-icon>delete</mat-icon>
+    <span>Delete</span>
+  </button>
+</mat-menu>
+

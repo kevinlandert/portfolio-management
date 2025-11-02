@@ -5,10 +5,11 @@ These schemas define the data models for financial instruments,
 matching the database schema in database/schema/01_instrument.sql.
 """
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 from datetime import datetime, date
 from typing import Optional, Dict, Any
 from decimal import Decimal
+from app.models.enums import InstrumentType, Currency
 
 
 class InstrumentBase(BaseModel):
@@ -20,15 +21,15 @@ class InstrumentBase(BaseModel):
     isin: Optional[str] = Field(None, description="International Securities Identification Number (ISO 6166)")
     
     # Instrument classification
-    instrument_type: str = Field(..., description="Type: equity, bond, etf, option, future, etc.")
+    instrument_type: InstrumentType = Field(..., description="Type: Equity, Bond, ETF, or Future")
     sector: Optional[str] = Field(None, description="Industry sector (e.g., 'Technology', 'Healthcare')")
     industry: Optional[str] = Field(None, description="Industry classification (e.g., 'Software', 'Biotech')")
     country: Optional[str] = Field(None, description="Country of origin/listing")
     
     # Currency information
-    original_currency: str = Field(..., description="Currency of the instrument's home market")
-    interest_currency: str = Field(..., description="Currency for interest/dividend payments")
-    statistical_currency: Optional[str] = Field(None, description="Currency for reporting/statistics")
+    original_currency: Currency = Field(..., description="Currency of the instrument's home market (CHF, EUR, or USD)")
+    interest_currency: Currency = Field(..., description="Currency for interest/dividend payments (CHF, EUR, or USD)")
+    statistical_currency: Optional[Currency] = Field(None, description="Currency for reporting/statistics (CHF, EUR, or USD)")
     
     # Interest/Rate information (for bonds, fixed income)
     interest_rate: Optional[float] = Field(None, description="Interest rate (e.g., 2.5 for 2.5%)")
@@ -90,13 +91,13 @@ class InstrumentUpdate(BaseModel):
     short_name: Optional[str] = None
     full_name: Optional[str] = None
     isin: Optional[str] = None
-    instrument_type: Optional[str] = None
+    instrument_type: Optional[InstrumentType] = None
     sector: Optional[str] = None
     industry: Optional[str] = None
     country: Optional[str] = None
-    original_currency: Optional[str] = None
-    interest_currency: Optional[str] = None
-    statistical_currency: Optional[str] = None
+    original_currency: Optional[Currency] = None
+    interest_currency: Optional[Currency] = None
+    statistical_currency: Optional[Currency] = None
     interest_rate: Optional[float] = None
     interest_period: Optional[int] = None
     last_price: Optional[float] = None
