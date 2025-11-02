@@ -44,9 +44,25 @@ clean:      ## Stop containers and remove volumes
 	docker compose down -v
 	docker system prune -f
 
-test:       ## Run tests
+test:       ## Run tests with coverage
 	@echo "Backend tests:"
-	@docker compose exec backend-dev pytest -q || echo "Backend not running or tests failed"
+	@docker compose up -d backend-dev 2>/dev/null || true
+	@docker compose exec backend-dev pytest --cov=app --cov-report=term-missing --cov-report=html -q || echo "Tests failed"
+	@echo ""
+	@echo "📊 Coverage report generated:"
+	@echo "   file://$$(pwd)/backend/htmlcov/index.html"
+	@echo "   (Click the link above or open in browser)"
+
+test-clean: ## Run tests in fresh container with coverage (thorough - rebuilds and tears down)
+	@echo "Backend tests (clean):"
+	@docker compose up -d --build backend-dev
+	@docker compose exec backend-dev pytest --cov=app --cov-report=term-missing --cov-report=html -q || echo "Tests failed"
+	@docker compose stop backend-dev
+	@echo ""
+	@echo "📊 Coverage report generated:"
+	@echo "   file://$$(pwd)/backend/htmlcov/index.html"
+	@echo "   (Click the link above or open in browser)"
+	@echo "Test container stopped"
 
 # Database commands (for future when you add PostgreSQL)
 db-shell:   ## Connect to database (when PostgreSQL service is added)
